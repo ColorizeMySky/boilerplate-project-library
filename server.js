@@ -4,11 +4,29 @@ var express     = require('express');
 var bodyParser  = require('body-parser');
 var cors        = require('cors');
 
+const mongoose = require('mongoose');
+const helmet = require('helmet');
+
 var apiRoutes         = require('./routes/api.js');
 var fccTestingRoutes  = require('./routes/fcctesting.js');
 var runner            = require('./test-runner');
 
+
+const url = process.env.DB;
+const connect = mongoose.connect(url);
+
+connect.then((db) => {
+  console.log("We managed to connect with database");
+}, (err) => { console.log(err); });
+
+
+
 var app = express();
+
+
+app.use(helmet.noCache());
+app.use(helmet.hidePoweredBy({ setTo: 'PHP 4.2.0' }));
+
 
 app.use('/public', express.static(process.cwd() + '/public'));
 
