@@ -89,15 +89,27 @@ module.exports = function (app) {
     //If I try to request a book that doesn't exist I will get a 'no book exists' message.
     .get(function (req, res, next){
       var bookid = req.params.id;
-      //json res format: {"_id": bookid, "title": book_title, "comments": [comment,comment,...]}
-       Books.findById(bookid)
-        .then((book) => {
-            res.statusCode = 200;
-            res.setHeader('Content-Type', 'application/json');
-            res.json(book);
-        }, (err) => next(err))
-        .catch((err) => next(err));
-
+      //json res format: {"_id": bookid, "title": book_title, "comments": [comment,comment,...]}    
+       Books.findOne({ _id: bookid })
+         .then(book => {
+           if (!book) {
+             res.statusCode = 404;
+             res.end("The book was not finded");
+            }
+            else{
+              res.statusCode = 200;
+              res.setHeader('Content-Type', 'application/json');
+              res.json(book);
+            }
+          })
+          .catch(err => {
+            if (err.message.indexOf('Cast to ObjectId failed') !== -1) {
+              res.statusCode = 404;
+              res.end("No book exist");
+            }
+            res.statusCode = 400;
+            res.end("Error while fetching the data on the database");
+          })
     })
 
     //I can post a comment to /api/books/{_id} to add a comment to a book and returned will be the books object similar to get /api/books/{_id}.
